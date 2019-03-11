@@ -1,4 +1,4 @@
-### ODROID-HC1
+### ODROID HC1/HC2
 
 Key features
 * Samsung Exynos5422 Cortex-A15 2Ghz and Cortex-A7 Octa core CPUs
@@ -9,6 +9,18 @@ Key features
 * UHS-1 capable micro-SD card slot for boot media
 * Size : 147 x 85 x 29 mm approx.(including Aluminium cooling frame)
 * Linux server OS images based on modern Kernel 4.14 LTS
+
+* The HC2 takes a 3.5inch HDD and powered with 12V 
+
+### ODROID XU4
+
+* Processor Samsung Exynos-5422 : Cortex™-A15 and Cortex™-A7
+* RAM Memory 2GByte LPDDR3 RAM
+* Graphics Samsung S2MPS11 9 high-efficiency Buck, 1 Buck-Boost regulators, RTC and 38 LDOs. 
+* Storage eMMC5.0 HS400 Flash Storage
+* I/O Connectors HDMI-A x 1, USB 3.0 Host x 2, USB 2.0 Host x 1, PWM for Cooler Fan, UART for * serial console 30Pin : GPIO/IRQ/SPI/ADC, 12Pin : GPIO/I2S/I2C
+* Network Ethernet RJ-45
+* Input Power 5V 4A
 
 ### ROCK64 4K60P HDR Single Board Computer
 

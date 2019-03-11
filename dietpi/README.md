@@ -6,6 +6,7 @@ This guide was tested on:
 
 * Odroid HC1
 * Odroid HC2 (the same board except it accommodates a 3.5" 12V HDD)
+* Odroid XU4
 * Raspberry Pi 3 B Plus - no LCD support so far
 * Rock64  
 

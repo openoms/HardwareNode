@@ -13,6 +13,7 @@
     [DietPi.txt](/dietpi/boot/dietpi.txt) - Overwrites the default dietpi.txt. Modified the settings to automate the DietPi setup. (see the details [here](https://github.com/rootzoll/raspiblitz/tree/master/dietpi#excerpts-from-the-default-dietpitxt))
 
     [Automation_Custom_Script.sh](/dietpi/boot/Automation_Custom_Script.sh) - Runs after DietPi installation is completed. Contains the link to download and to run the build_sdcard.sh from @openoms, tested on the Rock64.
+    Open the file with a text editor and uncomment (remove the `#` from the front of) the line with the branch you want to build the SDcard from. 
 
 * Insert the SDcard into your Rock64.
 
