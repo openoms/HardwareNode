@@ -119,7 +119,6 @@ if [ "${baseImage}" = "dietpi" ]; then
   # install OpenSSH client + server
   sudo apt install -y openssh-client
   sudo apt install -y openssh-sftp-server
-
 fi
 
 # special prepare when Raspbian
@@ -148,12 +147,20 @@ echo "*** CONFIG ***"
 echo "root:raspiblitz" | sudo chpasswd
 echo "pi:raspiblitz" | sudo chpasswd
 
-# set Raspi to boot up automatically with user pi (for the LCD)
-# https://www.raspberrypi.org/forums/viewtopic.php?t=21632
-sudo raspi-config nonint do_boot_behaviour B2
-sudo bash -c "echo '[Service]' >> /etc/systemd/system/getty@tty1.service.d/autologin.conf"
-sudo bash -c "echo 'ExecStart=' >> /etc/systemd/system/getty@tty1.service.d/autologin.conf"
-sudo bash -c "echo 'ExecStart=-/sbin/agetty --autologin pi --noclear %I 38400 linux' >> /etc/systemd/system/getty@tty1.service.d/autologin.conf"
+if [ "${baseImage}" = "raspbian" ]; then
+  # set Raspi to boot up automatically with user pi (for the LCD)
+  # https://www.raspberrypi.org/forums/viewtopic.php?t=21632
+  sudo raspi-config nonint do_boot_behaviour B2
+  sudo bash -c "echo '[Service]' >> /etc/systemd/system/getty@tty1.service.d/autologin.conf"
+  sudo bash -c "echo 'ExecStart=' >> /etc/systemd/system/getty@tty1.service.d/autologin.conf"
+  sudo bash -c "echo 'ExecStart=-/sbin/agetty --autologin pi --noclear %I 38400 linux' >> /etc/systemd/system/getty@tty1.service.d/autologin.conf"
+fi
+
+if [ "${baseImage}" = "dietpi" ]; then
+  sudo bash -c "echo '[Service]' >> /etc/systemd/system/getty@tty1.service.d/dietpi-autologin.conf"
+  sudo bash -c "echo 'ExecStart=' >> /etc/systemd/system/getty@tty1.service.d/dietpi-autologin.conf"
+  sudo bash -c "echo 'ExecStart=-/sbin/agetty --autologin pi --noclear %I 38400 linux' >> /etc/systemd/system/getty@tty1.service.d/dietpi-autologin.conf"
+fi
 
 # change log rotates
 # see https://github.com/rootzoll/raspiblitz/issues/394#issuecomment-471535483
@@ -515,13 +522,23 @@ sudo bash -c "echo 'source /home/admin/_commands.sh' >> /home/admin/.bashrc"
 sudo bash -c "echo '# automatically start main menu for admin' >> /home/admin/.bashrc"
 sudo bash -c "echo './00mainMenu.sh' >> /home/admin/.bashrc"
 
-# bash autostart for pi
-# run as exec to dont allow easy physical access by keyboard
-# see https://github.com/rootzoll/raspiblitz/issues/54
-sudo bash -c 'echo "# automatic start the LCD info loop" >> /home/pi/.bashrc'
-sudo bash -c 'echo "SCRIPT=/home/admin/00infoLCD.sh" >> /home/pi/.bashrc'
-sudo bash -c 'echo "# replace shell with script => logout when exiting script" >> /home/pi/.bashrc'
-sudo bash -c 'echo "exec \$SCRIPT" >> /home/pi/.bashrc'
+if [ "${baseImage}" = "raspbian" ]; then
+  # bash autostart for pi
+  # run as exec to dont allow easy physical access by keyboard
+  # see https://github.com/rootzoll/raspiblitz/issues/54
+  sudo bash -c 'echo "# automatic start the LCD info loop" >> /home/pi/.bashrc'
+  sudo bash -c 'echo "SCRIPT=/home/admin/00infoLCD.sh" >> /home/pi/.bashrc'
+  sudo bash -c 'echo "# replace shell with script => logout when exiting script" >> /home/pi/.bashrc'
+  sudo bash -c 'echo "exec \$SCRIPT" >> /home/pi/.bashrc'
+fi
+
+if [ "${baseImage}" = "dietpi" ]; then
+  # bash autostart for dietpi
+  sudo bash -c 'echo "# automatic start the LCD info loop" >> /home/dietpi/.bashrc'
+  sudo bash -c 'echo "SCRIPT=/home/admin/00infoLCD.sh" >> /home/dietpi/.bashrc'
+  sudo bash -c 'echo "# replace shell with script => logout when exiting script" >> /home/dietpi/.bashrc'
+  sudo bash -c 'echo "exec \$SCRIPT" >> /home/dietpi/.bashrc'
+fi
 
 # create /home/admin/setup.sh - which will get executed after reboot by autologin pi user
 cat > /home/admin/setup.sh <<EOF
