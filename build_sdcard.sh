@@ -56,9 +56,14 @@ echo "Detect Base Image ..."
 baseImage="?"
 isDietPi=$(uname -n | grep -c 'DietPi')
 isRaspbian=$(cat /etc/os-release 2>/dev/null | grep -c 'Raspbian')
+isArmbian=$(cat /etc/os-release 2>/dev/null | grep -c 'Debian')
 if [ ${isRaspbian} -gt 0 ]; then
   baseImage="raspbian"
 fi
+# treat Armbian as Raspbian 
+if [ ${isArmbian} -gt 0 ]; then
+  baseImage="raspbian"
+fi 
 if [ ${isDietPi} -gt 0 ]; then
   baseImage="dietpi"
 fi
