@@ -439,8 +439,6 @@ case $CHOICE in
             ;;
         FUNDING)
             ./BBfundWallet.sh
-            echo "Press ENTER to return to main menu."
-            read key
             ./00mainMenu.sh
             ;;
         CASHOUT)
@@ -545,7 +543,9 @@ case $CHOICE in
             sleep 10
             echo "stop ${network}d (2) - please wait .."
             sudo systemctl stop ${network}d
-            echo "starting shutdown"
+            sleep 3
+            sync
+            echo "starting shutdown ..."
             sudo shutdown now
             exit 0
             ;;

@@ -41,6 +41,7 @@ sudo systemctl status ${network}d -n2 --no-pager
 echo ""
 
 echo "*** LAST 5 ERROR LOGS ***"
+echo "sudo journalctl -u ${network}d -b --no-pager -n5"
 sudo journalctl -u ${network}d -b --no-pager -n5
 echo ""
 echo "*** LAST 20 INFO LOGS ***"
@@ -48,6 +49,7 @@ pathAdd=""
 if [ "${chain}" = "test" ]; then
   pathAdd="/testnet3"
 fi
+echo "sudo tail -n 20 /mnt/hdd/${network}${pathAdd}/debug.log"
 sudo tail -n 20 /mnt/hdd/${network}${pathAdd}/debug.log
 echo ""
 
@@ -56,16 +58,25 @@ sudo systemctl status lnd -n2 --no-pager
 echo ""
 
 echo "*** LAST 5 LND ERROR LOGS ***"
+echo "sudo journalctl -u lnd -b --no-pager -n5"
 sudo journalctl -u lnd -b --no-pager -n5
 echo ""
 echo "*** LAST 20 LND INFO LOGS ***"
+echo "sudo tail -n 20 /mnt/hdd/lnd/logs/${network}/${chain}net/lnd.log"
 sudo tail -n 20 /mnt/hdd/lnd/logs/${network}/${chain}net/lnd.log
 echo ""
 
 if [ "${rtlWebinterface}" = "on" ]; then
   echo "*** LAST 20 RTL LOGS ***"
   sudo journalctl -u RTL -b --no-pager -n20
-  echo ""
 else
   echo "- RTL is OFF by config"
 fi
+echo ""
+
+echo "*** HARDWARE TEST RESULTS ***"
+echo "UndervoltageReports in Logs: ${undervoltageReports}"
+if [ -f /home/admin/stresstest.report ]; then
+  sudo cat /home/admin/stresstest.report
+fi
+echo ""
