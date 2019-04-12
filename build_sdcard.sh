@@ -483,7 +483,7 @@ if [ ${isARM} -eq 1 ] ; then
 
   # olaoluwa
   PGPpkeys="https://keybase.io/roasbeef/pgp_keys.asc"
-  PGPcheck="F8037E70C12C7A263C032508CE58F7F8E20FD9A2"
+  PGPcheck="BD599672C804AF2770869A048B80CD2BB8BD8132"
 
   # bitconner 
   # PGPpkeys="https://keybase.io/bitconner/pgp_keys.asc"
