@@ -9,7 +9,7 @@ infoFile="/home/admin/raspiblitz.info"
 
 # check if HDD is connected
 isBTRFS=$(cat /etc/fstab | grep -c 'btrfs')
-if [${isBTRFS} -eq 0]; then
+if [ ${isBTRFS} -eq 0 ]; then
   hddExists=$(lsblk | grep -c sda1)
 else
   hddExists=$(lsblk | grep -c sda)
