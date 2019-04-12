@@ -12,7 +12,7 @@ if [ ${swapExists} -eq 1 ]; then
   echo "SWAP on HDD already exists"
 else
   isBTRFS=$(cat /etc/fstab | grep -c 'btrfs')
-  if [${isBTRFS} -eq 0]; then
+  if [ ${isBTRFS} -eq 0 ]; then
     echo "No SWAP found ... creating 1GB SWAP on HDD"
     sudo sed -i "12s/.*/CONF_SWAPFILE=\/mnt\/hdd\/swapfile/" /etc/dphys-swapfile
     sudo sed -i "16s/.*/CONF_SWAPSIZE=1024/" /etc/dphys-swapfile
