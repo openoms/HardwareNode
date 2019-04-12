@@ -282,6 +282,9 @@ if [ ${setupStep} -eq 0 ]; then
 
   else
 
+    # show hardware test
+    /home/admin/05hardwareTest.sh no-new-stresstest
+
     # start setup
     BACKTITLE="RaspiBlitz - Setup"
     TITLE="⚡ Welcome to your RaspiBlitz ⚡"
@@ -373,6 +376,8 @@ else
       fi
 
       # final Options
+      OPTIONS+=(HARDWARE "Run Hardwaretest")   
+      OPTIONS+=(SOFTWARE "Run Softwaretest")  
       OPTIONS+=(OFF "PowerOff RaspiBlitz")   
       OPTIONS+=(X "Console / Terminal")
 
@@ -516,6 +521,16 @@ case $CHOICE in
             else
               ./00mainMenu.sh
             fi
+            ;;
+        HARDWARE)
+            sudo ./05hardwareTest.sh
+            ./00mainMenu.sh
+            ;;
+        SOFTWARE)
+            sudo ./XXdebugLogs.sh
+            echo "Press ENTER to return to main menu."
+            read key
+            ./00mainMenu.sh
             ;;
         PASSWORD)
             sudo /home/admin/config.scripts/blitz.setpassword.sh
