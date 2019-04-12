@@ -57,13 +57,16 @@ baseImage="?"
 isDietPi=$(uname -n | grep -c 'DietPi')
 isRaspbian=$(cat /etc/os-release 2>/dev/null | grep -c 'Raspbian')
 isArmbian=$(cat /etc/os-release 2>/dev/null | grep -c 'Debian')
+isUbuntu=$(cat /etc/os-release 2>/dev/null | grep -c 'Ubuntu')
 if [ ${isRaspbian} -gt 0 ]; then
   baseImage="raspbian"
 fi
-# treat Armbian as Raspbian 
 if [ ${isArmbian} -gt 0 ]; then
-  baseImage="raspbian"
+  baseImage="armbian"
 fi 
+if [ ${isUbuntu} -gt 0 ]; then
+baseImage="ubuntu"
+fi
 if [ ${isDietPi} -gt 0 ]; then
   baseImage="dietpi"
 fi
@@ -81,18 +84,20 @@ fi
 sudo sed -i "s/^#static domain_name_servers=192.168.0.1*/static domain_name_servers=1.1.1.1/g" /etc/dhcpcd.conf
 systemctl daemon-reload
 
-# fixing locales for build
-# https://github.com/rootzoll/raspiblitz/issues/138
-# https://daker.me/2014/10/how-to-fix-perl-warning-setting-locale-failed-in-raspbian.html
-# https://stackoverflow.com/questions/38188762/generate-all-locales-in-a-docker-image
-echo ""
-echo "*** FIXING LOCALES FOR BUILD ***"
-sudo sed -i "s/^# en_US.UTF-8 UTF-8.*/en_US.UTF-8 UTF-8/g" /etc/locale.gen
-sudo sed -i "s/^# en_US ISO-8859-1.*/en_US ISO-8859-1/g" /etc/locale.gen
-sudo locale-gen
-export LANGUAGE=en_GB.UTF-8
-export LANG=en_GB.UTF-8
-export LC_ALL=en_GB.UTF-8
+if [ "${baseImage}" = "raspbian" ] || [ "${baseImage}" = "dietpi" ] ; then
+  # fixing locales for build
+  # https://github.com/rootzoll/raspiblitz/issues/138
+  # https://daker.me/2014/10/how-to-fix-perl-warning-setting-locale-failed-in-raspbian.html
+  # https://stackoverflow.com/questions/38188762/generate-all-locales-in-a-docker-image
+  echo ""
+  echo "*** FIXING LOCALES FOR BUILD ***"
+  sudo sed -i "s/^# en_US.UTF-8 UTF-8.*/en_US.UTF-8 UTF-8/g" /etc/locale.gen
+  sudo sed -i "s/^# en_US ISO-8859-1.*/en_US ISO-8859-1/g" /etc/locale.gen
+  sudo locale-gen
+  export LANGUAGE=en_GB.UTF-8
+  export LANG=en_GB.UTF-8
+  export LC_ALL=en_GB.UTF-8
+fi
 
 # update debian
 echo ""
@@ -107,7 +112,6 @@ if [ "${baseImage}" = "dietpi" ]; then
   echo "renaming dietpi user to pi"
   sudo usermod -l pi dietpi
   echo "install pip"
-  sudo apt-get update
   sudo apt-get remove -y fail2ban
   sudo apt-get install -y build-essential
   sudo apt-get install -y python-pip
@@ -144,6 +148,39 @@ if [ "${baseImage}" = "raspbian" ]; then
   sudo apt-get -y autoremove
 fi
 
+# special prepare when Ubuntu
+if [ "${baseImage}" = "ubuntu" ]; then
+  echo ""
+  echo "*** PREPARE Ubuntu ***"
+  # install killall, fuser
+  sudo apt-get install -y psmisc
+  echo "install pip"
+  sudo apt-get install -y python-pip
+  sudo apt-get install -y python3-pip
+  # rsync is needed to copy from HDD
+  sudo apt install -y rsync
+  # install ifconfig
+  sudo apt install -y net-tools
+  # netcat for 00infoBlitz.sh
+  sudo apt install -y netcat
+  # install OpenSSH server
+  sudo apt install -y openssh-sftp-server
+  sudo apt-get clean
+  sudo apt-get -y autoremove
+  # make pi user
+  sudo adduser --disabled-password --gecos "" pi
+fi
+
+# special prepare when Armbian
+if [ "${baseImage}" = "armbian" ]; then
+  sudo apt-get install -y python-pip
+  sudo pip install setuptools
+  sudo apt install -y netcat
+  sudo apt install -y openssh-sftp-server
+  # make pi user
+  sudo adduser --disabled-password --gecos "" pi
+fi
+
 echo ""
 echo "*** CONFIG ***"
 # based on https://github.com/Stadicus/guides/blob/master/raspibolt/raspibolt_20_pi.md#raspi-config
@@ -156,6 +193,8 @@ if [ "${baseImage}" = "raspbian" ]; then
   # set Raspi to boot up automatically with user pi (for the LCD)
   # https://www.raspberrypi.org/forums/viewtopic.php?t=21632
   sudo raspi-config nonint do_boot_behaviour B2
+fi
+if [ "${baseImage}" = "raspbian" ] || [ "${baseImage}" = "armbian" ] ; then
   sudo bash -c "echo '[Service]' >> /etc/systemd/system/getty@tty1.service.d/autologin.conf"
   sudo bash -c "echo 'ExecStart=' >> /etc/systemd/system/getty@tty1.service.d/autologin.conf"
   sudo bash -c "echo 'ExecStart=-/sbin/agetty --autologin pi --noclear %I 38400 linux' >> /etc/systemd/system/getty@tty1.service.d/autologin.conf"
