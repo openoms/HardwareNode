@@ -27,10 +27,17 @@ prepareTorSources()
     curl https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | sudo gpg --import
     sudo gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | sudo apt-key add -
     echo ""
- 
+
     echo "*** Adding Tor Sources to sources.list ***"
-    echo "deb https://deb.torproject.org/torproject.org stretch main" | sudo tee -a /etc/apt/sources.list
-    echo "deb-src https://deb.torproject.org/torproject.org stretch main" | sudo tee -a /etc/apt/sources.list
+    # different for Ubuntu
+    isUbuntu=$(cat /etc/os-release 2>/dev/null | grep -c 'Ubuntu')
+    if [ ${isUbuntu} -gt 0 ]; then
+      echo "deb https://deb.torproject.org/torproject.org bionic main" | sudo tee -a /etc/apt/sources.list
+      echo "deb-src https://deb.torproject.org/torproject.org bionic main" | sudo tee -a /etc/apt/sources.list
+    else
+      echo "deb https://deb.torproject.org/torproject.org stretch main" | sudo tee -a /etc/apt/sources.list
+      echo "deb-src https://deb.torproject.org/torproject.org stretch main" | sudo tee -a /etc/apt/sources.list
+    fi
     echo "OK"
     echo ""
 }
