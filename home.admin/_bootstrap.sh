@@ -121,7 +121,13 @@ fi
 ################################
  
 # waiting for HDD to connect
-hddExists=$(lsblk | grep -c sda1)
+isBTRFS=$(cat /etc/fstab | grep -c 'btrfs')
+if [${isBTRFS} -eq 0]; then
+  hddExists=$(lsblk | grep -c sda1)
+else
+  hddExists=$(lsblk | grep -c sda)
+fi
+
 while [ ${hddExists} -eq 0 ]
   do
     # display will ask user to connect a HDD
@@ -139,50 +145,83 @@ if [ ${hddIsAutoMounted} -eq 0 ]; then
   echo "HDD is there but not AutoMounted yet." >> $logFile
   echo "Analysing the situation ..." >> $logFile
 
-  # detect for correct device name (the biggest partition)
-  hddDeviceName="sda1"
-  hddSecondPartitionExists=$(lsblk | grep -c sda2)
-  if [ ${hddSecondPartitionExists} -eq 1 ]; then
-    echo "HDD has a second partition - choosing the bigger one ..." >> $logFile
-    # get both with size
-    size1=$(lsblk -o NAME,SIZE -b | grep "sda1" | awk '{ print substr( $0, 12, length($0)-2 ) }' | xargs)
-    echo "sda1(${size1})" >> $logFile
-    size2=$(lsblk -o NAME,SIZE -b | grep "sda2" | awk '{ print substr( $0, 12, length($0)-2 ) }' | xargs)
-    echo "sda2(${size2})" >> $logFile
-    # chosse to run with the bigger one
-    if [ ${size2} -gt ${size1} ]; then
-      echo "sda2 is BIGGER - run with this one" >> $logFile
-      hddDeviceName="sda2"
-    else
-      echo "sda1 is BIGGER - run with this one" >> $logFile
-      hddDeviceName="sda1"
+  if [${isEXT4} -gt 0]; then
+    # detect for correct device name (the biggest partition)
+    hddDeviceName="sda1"
+    hddSecondPartitionExists=$(lsblk | grep -c sda2)
+    if [ ${hddSecondPartitionExists} -eq 1 ]; then
+      echo "HDD has a second partition - choosing the bigger one ..." >> $logFile
+      # get both with size
+      size1=$(lsblk -o NAME,SIZE -b | grep "sda1" | awk '{ print substr( $0, 12, length($0)-2 ) }' | xargs)
+      echo "sda1(${size1})" >> $logFile
+      size2=$(lsblk -o NAME,SIZE -b | grep "sda2" | awk '{ print substr( $0, 12, length($0)-2 ) }' | xargs)
+      echo "sda2(${size2})" >> $logFile
+      # chosse to run with the bigger one
+      if [ ${size2} -gt ${size1} ]; then
+        echo "sda2 is BIGGER - run with this one" >> $logFile
+        hddDeviceName="sda2"
+      else
+        echo "sda1 is BIGGER - run with this one" >> $logFile
+        hddDeviceName="sda1"
+      fi
+    fi
+
+    # check if HDD is formatted EXT4
+    hddExt4=$(lsblk -o NAME,FSTYPE -b /dev/${hddDeviceName} | grep -c "ext4")
+    if [ ${hddExt4} -eq 0 ]; then
+      echo "HDD is NOT formatted in ext4." >> $logFile
+      # stop the bootstrap here ...
+      # display will ask user to run setup
+      sed -i "s/^state=.*/state=waitsetup/g" ${infoFile}
+      sed -i "s/^message=.*/message='HDD needs SetUp (1)'/g" ${infoFile}
+      exit 0
+    fi
+
+    # temp-mount the HDD
+    echo "temp-mounting the HDD .." >> $logFile
+    sudo mkdir /mnt/hdd
+    sudo mount -t ext4 /dev/${hddDeviceName} /mnt/hdd
+    mountOK=$(lsblk | grep -c '/mnt/hdd')
+    if [ ${mountOK} -eq 0 ]; then
+      echo "FAIL - not able to temp-mount HDD" >> $logFile
+      sed -i "s/^state=.*/state=waitsetup/g" ${infoFile}
+      sed -i "s/^message=.*/message='HDD failed Mounting'/g" ${infoFile}
+      # no need to unmount the HDD, it failed mounting
+      exit 0
+    else 
+      echo "OK - HDD available under /mnt/hdd" >> $logFile
     fi
   fi
+  
+  if [${isBTRFS} -gt 0]; then
+      # detect for correct device name (the biggest partition)
+    hddDeviceName="sda"
 
-  # check if HDD is formatted EXT4
-  hddExt4=$(lsblk -o NAME,FSTYPE -b /dev/${hddDeviceName} | grep -c "ext4")
-  if [ ${hddExt4} -eq 0 ]; then
-    echo "HDD is NOT formatted in ext4." >> $logFile
-    # stop the bootstrap here ...
-    # display will ask user to run setup
-    sed -i "s/^state=.*/state=waitsetup/g" ${infoFile}
-    sed -i "s/^message=.*/message='HDD needs SetUp (1)'/g" ${infoFile}
-    exit 0
-  fi
+    # check if HDD is formatted EXT4
+    hddExt4=$(lsblk -o NAME,FSTYPE -b /dev/${hddDeviceName} | grep -c "btrs")
+    if [ ${hddExt4} -eq 0 ]; then
+      echo "HDD is NOT formatted in btrfs." >> $logFile
+      # stop the bootstrap here ...
+      # display will ask user to run setup
+      sed -i "s/^state=.*/state=waitsetup/g" ${infoFile}
+      sed -i "s/^message=.*/message='HDD needs SetUp (1)'/g" ${infoFile}
+      exit 0
+    fi
 
-  # temp-mount the HDD
-  echo "temp-mounting the HDD .." >> $logFile
-  sudo mkdir /mnt/hdd
-  sudo mount -t ext4 /dev/${hddDeviceName} /mnt/hdd
-  mountOK=$(lsblk | grep -c '/mnt/hdd')
-  if [ ${mountOK} -eq 0 ]; then
-    echo "FAIL - not able to temp-mount HDD" >> $logFile
-    sed -i "s/^state=.*/state=waitsetup/g" ${infoFile}
-    sed -i "s/^message=.*/message='HDD failed Mounting'/g" ${infoFile}
-    # no need to unmount the HDD, it failed mounting
-    exit 0
-  else 
-     echo "OK - HDD available under /mnt/hdd" >> $logFile
+    # temp-mount the HDD
+    echo "temp-mounting the HDD .." >> $logFile
+    sudo mkdir /mnt/hdd
+    sudo mount /dev/${hddDeviceName} /mnt/hdd
+    mountOK=$(lsblk | grep -c '/mnt/hdd')
+    if [ ${mountOK} -eq 0 ]; then
+      echo "FAIL - not able to temp-mount HDD" >> $logFile
+      sed -i "s/^state=.*/state=waitsetup/g" ${infoFile}
+      sed -i "s/^message=.*/message='HDD failed Mounting'/g" ${infoFile}
+      # no need to unmount the HDD, it failed mounting
+      exit 0
+    else 
+      echo "OK - HDD available under /mnt/hdd" >> $logFile
+    fi
   fi
 
   # UPDATE MIGRATION & CONFIG PROVISIONING 

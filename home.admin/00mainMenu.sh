@@ -8,7 +8,13 @@ configFile="/mnt/hdd/raspiblitz.conf"
 infoFile="/home/admin/raspiblitz.info"
 
 # check if HDD is connected
-hddExists=$(lsblk | grep -c sda1)
+isBTRFS=$(cat /etc/fstab | grep -c 'btrfs')
+if [${isBTRFS} -eq 0]; then
+  hddExists=$(lsblk | grep -c sda1)
+else
+  hddExists=$(lsblk | grep -c sda)
+fi
+
 if [ ${hddExists} -eq 0 ]; then
 
   # check if there is maybe a HDD but woth no partitions

@@ -11,21 +11,24 @@ swapExists=$(swapon -s | grep -c /mnt/hdd/swapfile)
 if [ ${swapExists} -eq 1 ]; then
   echo "SWAP on HDD already exists"
 else
-  echo "No SWAP found ... creating 1GB SWAP on HDD"
-  sudo sed -i "12s/.*/CONF_SWAPFILE=\/mnt\/hdd\/swapfile/" /etc/dphys-swapfile
-  sudo sed -i "16s/.*/CONF_SWAPSIZE=1024/" /etc/dphys-swapfile
-  echo "OK - edited /etc/dphys-swapfile"
-  echo "Creating file ... this can take some seconds .."
-  sudo dd if=/dev/zero of=/mnt/hdd/swapfile bs=1024 count=1024000
-  sudo mkswap /mnt/hdd/swapfile
-  sudo dphys-swapfile setup
-  sudo chmod 0600 /mnt/hdd/swapfile
-  sudo dphys-swapfile swapon
+  isBTRFS=$(cat /etc/fstab | grep -c 'btrfs')
+  if [${isBTRFS} -eq 0]; then
+    echo "No SWAP found ... creating 1GB SWAP on HDD"
+    sudo sed -i "12s/.*/CONF_SWAPFILE=\/mnt\/hdd\/swapfile/" /etc/dphys-swapfile
+    sudo sed -i "16s/.*/CONF_SWAPSIZE=1024/" /etc/dphys-swapfile
+    echo "OK - edited /etc/dphys-swapfile"
+    echo "Creating file ... this can take some seconds .."
+    sudo dd if=/dev/zero of=/mnt/hdd/swapfile bs=1024 count=1024000
+    sudo mkswap /mnt/hdd/swapfile
+    sudo dphys-swapfile setup
+    sudo chmod 0600 /mnt/hdd/swapfile
+    sudo dphys-swapfile swapon
 
-  # expand FS of SD
-  echo "*** Expand RootFS ***"
-  sudo raspi-config --expand-rootfs
-  echo ""
+    # expand FS of SD
+    echo "*** Expand RootFS ***"
+    sudo raspi-config --expand-rootfs
+    echo ""
+  fi
 fi
 
 swapExists=$(swapon -s | grep -c /mnt/hdd/swapfile)
