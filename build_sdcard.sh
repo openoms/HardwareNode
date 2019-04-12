@@ -615,23 +615,32 @@ if [ ${isAARCH64} -eq 1 ] ; then
     echo "!!! BUILD FAILED --> Was not able to install bitcoind version(${bitcoinVersion})"
     exit 1
   fi
-  # not testing LITECOIN sorry
+  # not testing LITECOIN
 
   echo ""
   echo "*** LND ***"
 
   ## based on https://github.com/Stadicus/guides/blob/master/raspibolt/raspibolt_40_lnd.md#lightning-lnd
-  lndVersion="0.5.2-beta"
-  lndSHA256="9adf9f3d0b8a62942f68d75ffe043f9255319209f751dee4eac82375ec0a86cd"
-  olaoluwaPGP="BD599672C804AF2770869A048B80CD2BB8BD8132"
+  ## see LND releases: https://github.com/lightningnetwork/lnd/releases
+  lndVersion="0.6-beta-rc4"
+  # for arm64
+  lndSHA256="43c86a8fd50dc54d942bc85883202396da063780c249769f7b97b2159e8d5630"
+
+  # olaoluwa
+  PGPpkeys="https://keybase.io/roasbeef/pgp_keys.asc"
+  PGPcheck="BD599672C804AF2770869A048B80CD2BB8BD8132"
+
+  # bitconner 
+  # PGPpkeys="https://keybase.io/bitconner/pgp_keys.asc"
+  # PGPcheck="9C8D61868A7C492003B2744EE7D737B67FA592C7"
 
   # get LND resources
   cd /home/admin/download
-  binaryName="lnd-linux-armv7-v${lndVersion}.tar.gz"
+  binaryName="lnd-linux-arm64-v${lndVersion}.tar.gz"
   sudo -u admin wget https://github.com/lightningnetwork/lnd/releases/download/v${lndVersion}/${binaryName}
   sudo -u admin wget https://github.com/lightningnetwork/lnd/releases/download/v${lndVersion}/manifest-v${lndVersion}.txt
   sudo -u admin wget https://github.com/lightningnetwork/lnd/releases/download/v${lndVersion}/manifest-v${lndVersion}.txt.sig
-  sudo -u admin wget https://keybase.io/roasbeef/pgp_keys.asc
+  sudo -u admin wget -O /home/admin/download/pgp_keys.asc ${PGPpkeys}
 
   # check binary is was not manipulated (checksum test)
   binaryChecksum=$(sha256sum ${binaryName} | cut -d " " -f1)
@@ -642,11 +651,11 @@ if [ ${isAARCH64} -eq 1 ] ; then
 
   # check gpg finger print
   gpg ./pgp_keys.asc
-  fingerprint=$(gpg ./pgp_keys.asc 2>/dev/null | grep "${olaoluwaPGP}" -c)
+  fingerprint=$(sudo -u admin gpg /home/admin/download/pgp_keys.asc 2>/dev/null | grep "${PGPcheck}" -c)
   if [ ${fingerprint} -lt 1 ]; then
     echo ""
-    echo "!!! BUILD WARNING --> Bitcoin PGP author not as expected"
-    echo "Should contain olaoluwaPGP: ${olaoluwaPGP}"
+    echo "!!! BUILD WARNING --> LND PGP author not as expected"
+    echo "Should contain PGP: ${PGPcheck}"
     echo "PRESS ENTER to TAKE THE RISK if you think all is OK"
     read key
   fi
@@ -665,7 +674,7 @@ if [ ${isAARCH64} -eq 1 ] ; then
 
   # install
   sudo -u admin tar -xzf ${binaryName}
-  sudo install -m 0755 -o root -g root -t /usr/local/bin lnd-linux-armv7-v${lndVersion}/*
+  sudo install -m 0755 -o root -g root -t /usr/local/bin lnd-linux-arm64-v${lndVersion}/*
   sleep 3
   installed=$(sudo -u admin lnd --version)
   if [ ${#installed} -eq 0 ]; then
