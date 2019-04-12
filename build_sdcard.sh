@@ -194,7 +194,7 @@ if [ "${baseImage}" = "raspbian" ]; then
   # https://www.raspberrypi.org/forums/viewtopic.php?t=21632
   sudo raspi-config nonint do_boot_behaviour B2
 fi
-if [ "${baseImage}" = "raspbian" ] || [ "${baseImage}" = "armbian" ] ; then
+if [ "${baseImage}" = "raspbian" ] || [ "${baseImage}" = "armbian" ] || [ "${baseImage}" = "ubuntu" ] ; then
   sudo bash -c "echo '[Service]' >> /etc/systemd/system/getty@tty1.service.d/autologin.conf"
   sudo bash -c "echo 'ExecStart=' >> /etc/systemd/system/getty@tty1.service.d/autologin.conf"
   sudo bash -c "echo 'ExecStart=-/sbin/agetty --autologin pi --noclear %I 38400 linux' >> /etc/systemd/system/getty@tty1.service.d/autologin.conf"
@@ -633,7 +633,7 @@ sudo bash -c "echo 'source /home/admin/_commands.sh' >> /home/admin/.bashrc"
 sudo bash -c "echo '# automatically start main menu for admin' >> /home/admin/.bashrc"
 sudo bash -c "echo './00mainMenu.sh' >> /home/admin/.bashrc"
 
-if [ "${baseImage}" = "raspbian" ]; then
+if [ "${baseImage}" = "raspbian" ] || [ "${baseImage}" = "armbian" ] || [ "${baseImage}" = "ubuntu" ]; then
   # bash autostart for pi
   # run as exec to dont allow easy physical access by keyboard
   # see https://github.com/rootzoll/raspiblitz/issues/54
