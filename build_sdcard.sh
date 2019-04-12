@@ -93,8 +93,15 @@ fi
 
 # setting static DNS server
 # see https://github.com/rootzoll/raspiblitz/issues/322#issuecomment-466733550
-sudo sed -i "s/^#static domain_name_servers=192.168.0.1*/static domain_name_servers=1.1.1.1/g" /etc/dhcpcd.conf
-systemctl daemon-reload
+# check /etc/dhcpd.conf and /etc/dhcp/dhcpd.conf
+if [ -f "/etc/dhcpd.conf" ]; then
+  sudo sed -i "s/^#static domain_name_servers=192.168.0.1*/static domain_name_servers=1.1.1.1/g" /etc/dhcpcd.conf
+  systemctl daemon-reload
+fi
+if [ -f "/etc/dhcp/dhcpd.conf" ]; then
+  sudo sed -i "s/^#static domain_name_servers=192.168.0.1*/static domain_name_servers=1.1.1.1/g" /etc/dhcp/dhcpd.conf
+  systemctl daemon-reload
+fi
 
 if [ "${baseImage}" = "raspbian" ] || [ "${baseImage}" = "dietpi" ] ; then
   # fixing locales for build
