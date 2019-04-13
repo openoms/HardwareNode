@@ -157,6 +157,8 @@ do
     # check if auto-unlock feature if activated
     if [ "${autoUnlock}" = "on" ]; then
 
+      # needs infoFile
+      source ${infoFile}
       # check if lnd is locked
       locked=$(sudo -u bitcoin /usr/local/bin/lncli --chain=${network} --network=${chain}net getinfo 2>&1 | grep -c unlock)
       if [ ${locked} -gt 0 ]; then
