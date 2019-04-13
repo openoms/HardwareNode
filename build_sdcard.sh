@@ -94,11 +94,11 @@ fi
 # setting static DNS server
 # see https://github.com/rootzoll/raspiblitz/issues/322#issuecomment-466733550
 # check /etc/dhcpd.conf and /etc/dhcp/dhcpd.conf
-if [ -f "/etc/dhcpd.conf" ]; then
+if [ "${baseImage}" = "raspbian" ] || [ "${baseImage}" = "dietpi" ] ; then
   sudo sed -i "s/^#static domain_name_servers=192.168.0.1*/static domain_name_servers=1.1.1.1/g" /etc/dhcpcd.conf
   systemctl daemon-reload
 fi
-if [ -f "/etc/dhcp/dhcpd.conf" ]; then
+if [ "${baseImage}" = "ubuntu" ]; then
   sudo sed -i "s/^#static domain_name_servers=192.168.0.1*/static domain_name_servers=1.1.1.1/g" /etc/dhcp/dhcpd.conf
   systemctl daemon-reload
 fi
@@ -124,35 +124,17 @@ echo "*** UPDATE DEBIAN ***"
 sudo apt-get update
 sudo apt-get upgrade -f -y --allow-change-held-packages
 
+echo ""
+echo "*** PREPARE ${baseImage} ***"
+
 # special prepare when DietPi
 if [ "${baseImage}" = "dietpi" ]; then
-  echo ""
-  echo "*** PREPARE DietPi ***"
   echo "renaming dietpi user to pi"
   sudo usermod -l pi dietpi
-  echo "install pip"
-  sudo apt-get remove -y fail2ban
-  sudo apt-get install -y build-essential
-  sudo apt-get install -y python-pip
-  # rsync is needed to copy from HDD
-  sudo apt install -y rsync
-  # install ifconfig
-  sudo apt install -y net-tools
-  #to display hex codes
-  sudo apt install -y xxd
-  # setuptools needed for Nyx
-  sudo pip install setuptools
-  # netcat for 00infoBlitz.sh
-  sudo apt install -y netcat
-  # install OpenSSH client + server
-  sudo apt install -y openssh-client
-  sudo apt install -y openssh-sftp-server
 fi
 
 # special prepare when Raspbian
 if [ "${baseImage}" = "raspbian" ]; then
-  echo ""
-  echo "*** PREPARE Raspbian ***"
   # do memory split (16MB)
   sudo raspi-config nonint do_memory_split 16
   # set to wait until network is available on boot (0 seems to yes)
@@ -169,33 +151,12 @@ fi
 
 # special prepare when Ubuntu
 if [ "${baseImage}" = "ubuntu" ]; then
-  echo ""
-  echo "*** PREPARE Ubuntu ***"
-  # install killall, fuser
-  sudo apt-get install -y psmisc
-  echo "install pip"
-  sudo apt-get install -y python-pip
-  sudo apt-get install -y python3-pip
-  # rsync is needed to copy from HDD
-  sudo apt install -y rsync
-  # install ifconfig
-  sudo apt install -y net-tools
-  # netcat for 00infoBlitz.sh
-  sudo apt install -y netcat
-  # install OpenSSH server
-  sudo apt install -y openssh-sftp-server
-  sudo apt-get clean
-  sudo apt-get -y autoremove
   # make user pi
   sudo adduser --disabled-password --gecos "" pi
 fi
 
 # special prepare when Armbian
 if [ "${baseImage}" = "armbian" ]; then
-  sudo apt-get install -y python-pip
-  sudo pip install -y setuptools
-  sudo apt install -y netcat
-  sudo apt install -y openssh-sftp-server
   # make user pi
   sudo adduser --disabled-password --gecos "" pi
 fi
@@ -212,8 +173,6 @@ if [ "${baseImage}" = "raspbian" ]; then
   # set Raspi to boot up automatically with user pi (for the LCD)
   # https://www.raspberrypi.org/forums/viewtopic.php?t=21632
   sudo raspi-config nonint do_boot_behaviour B2
-fi
-if [ "${baseImage}" = "raspbian" ] || [ "${baseImage}" = "armbian" ] || [ "${baseImage}" = "ubuntu" ] ; then
   sudo bash -c "echo '[Service]' >> /etc/systemd/system/getty@tty1.service.d/autologin.conf"
   sudo bash -c "echo 'ExecStart=' >> /etc/systemd/system/getty@tty1.service.d/autologin.conf"
   sudo bash -c "echo 'ExecStart=-/sbin/agetty --autologin pi --noclear %I 38400 linux' >> /etc/systemd/system/getty@tty1.service.d/autologin.conf"
@@ -224,6 +183,12 @@ if [ "${baseImage}" = "dietpi" ]; then
   # requires AUTO_SETUP_AUTOSTART_TARGET_INDEX=7 in the dietpi.txt
   # /DietPi/dietpi/dietpi-autostart overwrites /etc/systemd/system/getty@tty1.service.d/dietpi-autologin.conf on reboot
   sudo sed -i 's/agetty --autologin root %I $TERM/agetty --autologin pi --noclear %I 38400 linux/' /DietPi/dietpi/dietpi-autostart
+fi
+
+if [ "${baseImage}" = "ubuntu" ] || [ "${baseImage}" = "armbian" ]; then
+  sudo bash -c "echo '[Service]' >> /lib/systemd/system/getty@.service"
+  sudo bash -c "echo 'ExecStart=' >> /lib/systemd/system/getty@.service"
+  sudo bash -c "echo 'ExecStart=-/sbin/agetty --autologin pi --noclear %I 38400 linux' >> /lib/systemd/system/getty@.service"
 fi
 
 # change log rotates
@@ -323,6 +288,27 @@ sudo apt install -y sysbench
 sudo apt-get install -y redis-server
 sudo -H pip3 install redis
 
+# check for dependencies for DietPi, Ubuntu, Armbian
+sudo apt-get install -y build-essential
+sudo apt-get install -y python-pip
+# rsync is needed to copy from HDD
+sudo apt install -y rsync
+# install ifconfig
+sudo apt install -y net-tools
+#to display hex codes
+sudo apt install -y xxd
+# setuptools needed for Nyx
+sudo pip install setuptools
+# netcat for 00infoBlitz.sh
+sudo apt install -y netcat
+# install OpenSSH client + server
+sudo apt install -y openssh-client
+sudo apt install -y openssh-sftp-server
+# install killall, fuser
+sudo apt-get install -y psmisc
+sudo apt-get clean
+sudo apt-get -y autoremove
+
 echo ""
 echo "*** ADDING MAIN USER admin ***"
 # based on https://github.com/Stadicus/guides/blob/master/raspibolt/raspibolt_20_pi.md#adding-main-user-admin
@@ -336,6 +322,7 @@ sudo chsh admin -s /bin/bash
 # configure sudo for usage without password entry
 echo '%sudo ALL=(ALL) NOPASSWD:ALL' | sudo EDITOR='tee -a' visudo
 
+echo ""
 echo "*** ADDING SERVICE USER bitcoin"
 # based on https://github.com/Stadicus/guides/blob/master/raspibolt/raspibolt_20_pi.md#adding-the-service-user-bitcoin
 
@@ -375,13 +362,13 @@ bitcoinVersion="0.17.1"
 
 # set OS version 
 if [ ${isARM} -eq 1 ] ; then
-  bitcoinOSversion = "arm"
+  bitcoinOSversion="arm"
   # needed to make sure download is not changed
   # calulate with sha256sum and also check with SHA256SUMS.asc
   bitcoinSHA256="aab3c1fb92e47734fadded1d3f9ccf0ac5a59e3cdc28c43a52fcab9f0cb395bc"
 fi
 if [ ${isAARCH64} -eq 1 ] ; then
-  bitcoinOSversion = "aarch64"
+  bitcoinOSversion="aarch64"
   bitcoinSHA256="5659c436ca92eed8ef42d5b2d162ff6283feba220748f9a373a5a53968975e34"
 fi
 
@@ -504,10 +491,10 @@ fi
 # olaoluwa
 PGPpkeys="https://keybase.io/roasbeef/pgp_keys.asc"
 PGPcheck="BD599672C804AF2770869A048B80CD2BB8BD8132"
-
+PGPcheck="BD599672C804AF2770869A048B80CD2BB8BD8132"
 # bitconner 
-# PGPpkeys="https://keybase.io/bitconner/pgp_keys.asc"
-# PGPcheck="9C8D61868A7C492003B2744EE7D737B67FA592C7"
+#PGPpkeys="https://keybase.io/bitconner/pgp_keys.asc"
+#PGPcheck="9C8D61868A7C492003B2744EE7D737B67FA592C7"
 
 # get LND resources
 cd /home/admin/download
@@ -526,7 +513,7 @@ fi
 
 # check gpg finger print
 gpg ./pgp_keys.asc
-fingerprint=$(sudo -u admin gpg /home/admin/download/pgp_keys.asc 2>/dev/null | grep "${PGPcheck}" -c)
+fingerprint=$(sudo gpg /home/admin/download/pgp_keys.asc 2>/dev/null | grep "${PGPcheck}" -c)
 if [ ${fingerprint} -lt 1 ]; then
   echo ""
   echo "!!! BUILD WARNING --> LND PGP author not as expected"
