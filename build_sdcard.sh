@@ -149,16 +149,11 @@ if [ "${baseImage}" = "raspbian" ]; then
   sudo apt-get -y autoremove
 fi
 
-# special prepare when Ubuntu
-if [ "${baseImage}" = "ubuntu" ]; then
-  # make user pi
+# special prepare when Ubuntu or Armbian
+if [ "${baseImage}" = "ubuntu" ] || [ "${baseImage}" = "armbian" ]; then
+  # make user pi and add to sudo 
   sudo adduser --disabled-password --gecos "" pi
-fi
-
-# special prepare when Armbian
-if [ "${baseImage}" = "armbian" ]; then
-  # make user pi
-  sudo adduser --disabled-password --gecos "" pi
+  sudo adduser pi sudo
 fi
 
 echo ""
@@ -729,7 +724,7 @@ echo ""
 echo "IMPORTANT IF WANT TO MAKE A RELEASE IMAGE FROM THIS BUILD:"
 echo "login once after reboot without HDD and run 'XXprepareRelease.sh'"
 echo ""
-echo "to continue: reboot with \`sudo shutdown -r now \` and login with user: admin password: raspiblitz"
+echo "to continue: reboot with \`sudo shutdown -r now\` and login with user:admin password:raspiblitz"
 echo ""
 
 # install default LCD on DietPi without reboot to allow automatic build
