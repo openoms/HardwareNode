@@ -75,8 +75,15 @@ else
 fi
 
 # get network traffic
-network_rx=$(ifconfig eth0 | grep 'RX packets' | awk '{ print $6$7 }' | sed 's/[()]//g')
-network_tx=$(ifconfig eth0 | grep 'TX packets' | awk '{ print $6$7 }' | sed 's/[()]//g')
+# ifconfig does not show eth0 on Armbian - get first traffic info 
+isArmbian=$(cat /etc/os-release 2>/dev/null | grep -c 'Debian')
+if [ ${isArmbian} -gt 0 ]; then
+  network_rx=$(ifconfig | grep -m1 'RX packets' | awk '{ print $6$7 }' | sed 's/[()]//g')
+  network_tx=$(ifconfig | grep -m1 'TX packets' | awk '{ print $6$7 }' | sed 's/[()]//g')
+else
+  network_rx=$(ifconfig eth0 | grep 'RX packets' | awk '{ print $6$7 }' | sed 's/[()]//g')
+  network_tx=$(ifconfig eth0 | grep 'TX packets' | awk '{ print $6$7 }' | sed 's/[()]//g')
+fi
 
 # Bitcoin blockchain
 btc_path=$(command -v ${network}-cli)
@@ -161,11 +168,11 @@ if [ "${runBehindTor}" = "on" ]; then
 
   # TOR address
   onionAddress=$(echo ${networkInfo} | jq -r '.localaddresses [0] .address')
-  networkConnectionsInfo="${color_purple}${networkConnections} ${color_gray}peers"
+  networkConnectionsInfo="${color_purple}${networkConnections} ${color_gray}"
   public_addr="${onionAddress}:${public_port}"
   public=""
   public_color="${color_green}"
-  torInfo="+ TOR"
+  torInfo="Tor"
 
 else
 
@@ -291,7 +298,7 @@ ${color_yellow}
 ${color_yellow}
 ${color_yellow}
 ${color_yellow}            ${color_amber}%s ${color_green} ${ln_alias}
-${color_yellow}            ${color_gray}${network} Fullnode + Lightning Network ${torInfo}
+${color_yellow}            ${color_gray}${network} Fullnode Lightning Network ${torInfo}
 ${color_yellow}       ,/   ${color_yellow}%s
 ${color_yellow}     ,'/    ${color_gray}%s, temp %s°C %s°F
 ${color_yellow}   ,' /     ${color_gray}FreeMem ${color_ram}${ram} ${color_gray} FreeHDD ${color_hdd}%s
