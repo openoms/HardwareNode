@@ -8,6 +8,11 @@ echo ""
 echo "Enabling the LCD (needs restart)"
 wget https://github.com/john1117/odroid-cloudshell/raw/master/odroid-cloudshell_20170420-4_armhf.deb
 sudo dpkg -i odroid-cloudshell_20170420-4_armhf.deb
+
+# based on https://www.raspberrypi-spy.co.uk/20104/how-to-change-the-command-line-font-size/
+sudo sed -i 's/FONTFACE="Fixed"/FONTFACE="Terminus"/' /etc/default/console-setup
+sudo sed -i 's/FONTSIZE="8x16"/FONTSIZE="6x12"/' /etc/default/console-setup 
+
 echo "Fan configuration"
 sudo apt install -y i2c-tools
 wget https://github.com/john1117/cloudshell2-fan/raw/master/cloudshell2-fan_20170420-1_armhf.deb

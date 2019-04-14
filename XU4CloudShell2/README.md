@@ -38,10 +38,16 @@ https://github.com/rootzoll/raspiblitz/issues/341
 
 sudo dpkg-reconfigure console-setup
 
+based on https://www.raspberrypi-spy.co.uk/20104/how-to-change-the-command-line-font-size/
+sudo sed -i 's/FONTFACE="Fixed"/FONTFACE="Terminus"/' /etc/default/console-setup
+sudo sed -i 's/FONTSIZE="8x16"/FONTSIZE="6x12"/' /etc/default/console-setup 
+
+scp ./XU4CloudShell2/00infoBlitz_3.2inch.sh admin@192.168.1.122:/home/admin/00infoBlitz.sh
 
 ---
 
 TODO:
+
 
 * change sda1 to sda on 00mainmenu.sh:
 * cp _bootstrapBtrfsHDD.sh _bootstrap.sh and sudo systemctl daemon-reload
@@ -53,7 +59,7 @@ if [ ${hddExists} -eq 0 ]; then
 * change HHD1 sda1 to sdb in 50cloneHDD.sh
 change HDD2 sda2/sdb to sdc1 in 50cloneHDD.sh
 
-90finishSetup.sh creating swap fails on btrfs
+* 90finishSetup.sh creating swap fails on btrfs
 
 ---
 
