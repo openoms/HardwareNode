@@ -486,7 +486,7 @@ fi
 # olaoluwa
 PGPpkeys="https://keybase.io/roasbeef/pgp_keys.asc"
 PGPcheck="BD599672C804AF2770869A048B80CD2BB8BD8132"
-PGPcheck="BD599672C804AF2770869A048B80CD2BB8BD8132"
+
 # bitconner 
 #PGPpkeys="https://keybase.io/bitconner/pgp_keys.asc"
 #PGPcheck="9C8D61868A7C492003B2744EE7D737B67FA592C7"
