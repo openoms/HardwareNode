@@ -302,9 +302,9 @@ ${color_yellow}            ${color_gray}${network} Fullnode Lightning Network ${
 ${color_yellow}       ,/   ${color_yellow}%s
 ${color_yellow}     ,'/    ${color_gray}%s, temp %s°C %s°F
 ${color_yellow}   ,' /     ${color_gray}FreeMem ${color_ram}${ram} ${color_gray} FreeHDD ${color_hdd}%s
-${color_yellow} ,'  /_____,${color_gray}ssh admin@${color_green}${local_ip}${color_gray} ▼${network_rx} ▲${network_tx}
-${color_yellow}.'____    ,'${color_gray}${webinterfaceInfo}
-${color_yellow}      /  ,' ${color_gray}${network} ${color_green}${networkVersion} ${chain}net ${color_gray}Sync ${sync_color}${sync} %s${torrentBaseStatus}${torrentUpdateStatus}
+${color_yellow} ,'  /_____ ${color_green}admin@${local_ip}${color_gray} ▼${network_rx} ▲${network_tx}
+${color_yellow}.'_____   , ${color_gray}${webinterfaceInfo}
+${color_yellow}      /  '  ${color_gray}${network} ${color_green}${networkVersion} ${chain}net ${color_gray}Sync ${sync_color}${sync} %s${torrentBaseStatus}${torrentUpdateStatus}
 ${color_yellow}     / ,'   ${color_gray}${public_addr_pre}${public_color}${public_addr} ${public}${networkConnectionsInfo}
 ${color_yellow}    /,'     ${color_gray}
 ${color_yellow}   /'       ${color_gray}LND ${color_green}${ln_version} ${ln_baseInfo}
