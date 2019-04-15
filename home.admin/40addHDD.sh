@@ -29,8 +29,8 @@ if [ ${existsHDD} -gt 0 ]; then
         fstabAdd="UUID=${uuid} /mnt/hdd ext4 noexec,defaults 0 2"
         echo "Adding line to /etc/fstab ..."
         echo ${fstabAdd}
-        # adding the new line after line 3 to the /etc/fstab
-        sudo sed "3 a ${fstabAdd}" -i /etc/fstab
+        # adding in a new line to the /etc/fstab
+        sudo sed "a\ ${fstabAdd}" -i /etc/fstab
       else
         echo "UUID is already in /etc/fstab"
       fi
