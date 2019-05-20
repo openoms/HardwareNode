@@ -65,3 +65,11 @@ change HDD2 sda2/sdb to sdc1 in 50cloneHDD.sh
 
 Resources: 
 https://wiki.odroid.com/accessory/add-on_boards/xu4_cloudshell2/easy_install
+
+https://btrfs.wiki.kernel.org/index.php/UseCases#How_do_I_create_a_RAID1_mirror_in_Btrfs.3F
+
+https://btrfs.wiki.kernel.org/index.php/Using_Btrfs_with_Multiple_Devices
+
+sudo mount /dev/sda /mnt/hdd
+sudo btrfs device add /dev/sda /mnt/hdd
+sudo btrfs balance start -dconvert=raid1 -mconvert=raid1 /mnt/hdd
