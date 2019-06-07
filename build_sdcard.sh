@@ -119,6 +119,13 @@ sudo apt-get upgrade -f -y --allow-change-held-packages
 echo ""
 echo "*** PREPARE ${baseImage} ***"
 
+# special prepare when AtomicPi (X86_64, Ubuntu)
+isAtomicPi=$(cut -d: -f1 /etc/passwd | grep -c "atomicpi")
+if [ ${isAtomicPi} -gt 0 ]; then
+  echo "running on AtomicPi"
+  sudo usermod -l pi atomicpi
+fi
+
 # special prepare when DietPi
 if [ "${baseImage}" = "dietpi" ]; then
   echo "renaming dietpi user to pi"
