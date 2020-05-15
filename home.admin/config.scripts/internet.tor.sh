@@ -282,14 +282,13 @@ if [ "$1" = "1" ] || [ "$1" = "on" ]; then
 DataDirectory /mnt/hdd/tor/sys
 PidFile /mnt/hdd/tor/sys/tor.pid
 
-SafeLogging 0
+SafeLogging 1
 Log notice stdout
 Log notice file /mnt/hdd/tor/notice.log
 Log info file /mnt/hdd/tor/info.log
 
 RunAsDaemon 1
 User bitcoin
-PortForwarding 1
 ControlPort 9051
 SocksPort 9050
 ExitRelay 0
@@ -342,10 +341,14 @@ EOF
     echo ""
 
     echo "ReadWriteDirectories=-/mnt/hdd/tor" | sudo tee -a /lib/systemd/system/tor@default.service
+    sudo sed -i "s/debian-tor/bitcoin/g" /lib/systemd/system/tor@default.service
 
   else
     echo "TOR package/service is installed and was prepared earlier .. just activating again"
   fi
+
+  # make sure /run/tor is owned by the bitcoin user, see https://github.com/rootzoll/raspiblitz/issues/998
+  sudo sed -i "s/debian-tor/bitcoin/g" /lib/systemd/system/tor@default.service
 
   # ACTIVATE TOR SERVICE
   echo "*** Enable TOR Service ***"
