@@ -71,10 +71,12 @@ if [ "$1" = "1" ] || [ "$1" = "on" ]; then
 
     # create thunderhub user
     sudo adduser --disabled-password --gecos "" thunderhub
-
+    # move the home directory to the disk
+    sudo usermod -m -d /mnt/hdd/app-storage/thunderhub thunderhub
+    
     # download and install
-    sudo -u thunderhub git clone https://github.com/apotdevin/thunderhub.git /home/thunderhub/thunderhub
-    cd /home/thunderhub/thunderhub
+    sudo -u thunderhub git clone https://github.com/apotdevin/thunderhub.git /mnt/hdd/app-storage/thunderhub/thunderhub
+    cd /mnt/hdd/app-storage/thunderhub/thunderhub
     # https://github.com/apotdevin/thunderhub/releases
     sudo -u thunderhub git reset --hard v0.6.13
     echo "Running npm install and run build..."
@@ -86,9 +88,9 @@ if [ "$1" = "1" ] || [ "$1" = "on" ]; then
     ###############
 
     # make sure symlink to central app-data directory exists ***"
-    sudo rm -rf /home/thunderhub/.lnd  # not a symlink.. delete it silently
+    sudo rm -rf /mnt/hdd/app-storage/thunderhub/.lnd  # not a symlink.. delete it silently
     # create symlink
-    sudo ln -s "/mnt/hdd/app-data/lnd/" "/home/thunderhub/.lnd"
+    sudo ln -s "/mnt/hdd/app-data/lnd/" "/mnt/hdd/app-storage/thunderhub/.lnd"
 
     # make sure thunderhub is member of lndadmin
     sudo /usr/sbin/usermod --append --groups lndadmin thunderhub
@@ -117,11 +119,11 @@ THEME='dark'
 # -----------
 # Account Configs
 # -----------
-ACCOUNT_CONFIG_PATH='/home/thunderhub/thubConfig.yaml'
+ACCOUNT_CONFIG_PATH='/mnt/hdd/app-storage/thunderhub/thubConfig.yaml'
 EOF
-    sudo rm -f /home/thunderhub/thunderhub/.env
-    sudo mv /home/admin/thunderhub.env /home/thunderhub/thunderhub/.env
-    sudo chown thunderhub:thunderhub /home/thunderhub/thunderhub/.env
+    sudo rm -f /mnt/hdd/app-storage/thunderhub/thunderhub/.env
+    sudo mv /home/admin/thunderhub.env /mnt/hdd/app-storage/thunderhub/thunderhub/.env
+    sudo chown thunderhub:thunderhub /mnt/hdd/app-storage/thunderhub/thunderhub/.env
 
     ##################
     # thubConfig.yaml
@@ -135,13 +137,13 @@ masterPassword: '$PASSWORD_B' # Default password unless defined in account
 accounts:
   - name: '$hostname'
     serverUrl: '127.0.0.1:10009'
-    macaroonPath: '/home/thunderhub/.lnd/data/chain/bitcoin/mainnet/admin.macaroon'
-    certificatePath: '/home/thunderhub/.lnd/tls.cert'
+    macaroonPath: '/mnt/hdd/app-storage/thunderhub/.lnd/data/chain/bitcoin/mainnet/admin.macaroon'
+    certificatePath: '/mnt/hdd/app-storage/thunderhub/.lnd/tls.cert'
 EOF
-    sudo rm -f /home/thunderhub/thubConfig.yaml
-    sudo mv /home/admin/thubConfig.yaml /home/thunderhub/thubConfig.yaml
-    sudo chown thunderhub:thunderhub /home/thunderhub/thubConfig.yaml
-    sudo chmod 600 /home/thunderhub/thubConfig.yaml | exit 1
+    sudo rm -f /mnt/hdd/app-storage/thunderhub/thubConfig.yaml
+    sudo mv /home/admin/thubConfig.yaml /mnt/hdd/app-storage/thunderhub/thubConfig.yaml
+    sudo chown thunderhub:thunderhub /mnt/hdd/app-storage/thunderhub/thubConfig.yaml
+    sudo chmod 600 /mnt/hdd/app-storage/thunderhub/thubConfig.yaml | exit 1
 
     ##################
     # SYSTEMD SERVICE
@@ -157,7 +159,7 @@ Wants=lnd.service
 After=lnd.service
 
 [Service]
-WorkingDirectory=/home/thunderhub/thunderhub
+WorkingDirectory=/mnt/hdd/app-storage/thunderhub/thunderhub
 ExecStart=/usr/bin/npm run start -- -p 3010
 User=thunderhub
 Restart=always
@@ -209,7 +211,7 @@ fi
 # update
 if [ "$1" = "update" ]; then
   echo "*** UPDATING THUNDERHUB ***"
-  cd /home/thunderhub/thunderhub
+  cd /mnt/hdd/app-storage/thunderhub/thunderhub
   sudo -u thunderhub git pull
   sudo -u thunderhub npm install
   sudo -u thunderhub npm run build
