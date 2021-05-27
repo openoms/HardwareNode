@@ -238,9 +238,6 @@ if [ "$1" = "1" ] || [ "$1" = "on" ]; then
 # Application Options
 httpslisten=0.0.0.0:8443
 uipassword=$PASSWORD_B
-#letsencrypt=true
-#letsencrypthost=loop.merchant.com
-lit-dir=/home/lit/.lit
 
 # Remote options
 remote.lit-debuglevel=debug
@@ -358,6 +355,8 @@ if [ "$1" = "0" ] || [ "$1" = "off" ]; then
     sudo rm /etc/systemd/system/litd.service
     # delete user 
     sudo userdel -rf lit
+    # delete group
+    sudo groupdel lit
     # close ports on firewall
     sudo ufw deny 8443
     # delete Go package

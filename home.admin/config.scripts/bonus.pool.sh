@@ -265,8 +265,6 @@ if [ "$1" = "0" ] || [ "$1" = "off" ]; then
     sudo userdel -rf pool
     # delete the binary
     sudo rm /usr/local/bin/poold
-    # remove symlink
-    sudo rm -r /mnt/hdd/app-data/.pool
     echo "# OK, the Pool Service is removed."
   else 
     echo "# Pool is not installed."
