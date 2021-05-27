@@ -39,14 +39,11 @@ sudo systemctl stop poold 2>/dev/null
 if [ "$1" = "1" ] || [ "$1" = "on" ]; then
   echo "# installing pool"
   
+  echo "# remove LiT to avoid interference with accounts (data is preserved)"
+  /home/admin/config.scripts/bonus.lit.sh off
+
   isInstalled=$(sudo ls /etc/systemd/system/poold.service 2>/dev/null | grep -c 'poold.service')
   if [ ${isInstalled} -eq 0 ]; then
-
-    # install Go
-    /home/admin/config.scripts/bonus.go.sh on
-    
-    # get Go vars
-    source /etc/profile
 
     # create dedicated user
     sudo adduser --disabled-password --gecos "" pool
@@ -159,7 +156,11 @@ if [ "$1" = "1" ] || [ "$1" = "on" ]; then
     tar -xzf ${binaryName}
     sudo install -m 0755 -o root -g root -t /usr/local/bin pool-linux-${OSversion}-${poolVersion}/*
 
-    # # install from source
+    # install from source
+    # install Go
+    # /home/admin/config.scripts/bonus.go.sh on
+    # get Go vars
+    # source /etc/profile
     # cd /home/pool
     # 
     # sudo -u pool git clone https://github.com/lightninglabs/pool.git || exit 1
