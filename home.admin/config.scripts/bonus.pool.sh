@@ -9,9 +9,10 @@ poolVersion="v0.5.0-alpha"
 
 # command info
 if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "-help" ]; then
- echo "# config script to switch the  Lightning Pool CLI on or off"
+ echo "# config script to switch the Lightning Pool CLI on or off"
  echo "# bonus.pool.sh [on|off|menu]"
- echo "# DEPRECATED use instead: bonus.lit.sh"
+ echo "# this Pool instance is CLI only."
+ echo "# for a GUI use 'bonus.lit.sh' instead"
  exit 1
 fi
 
