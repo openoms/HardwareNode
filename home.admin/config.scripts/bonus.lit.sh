@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # https://github.com/lightninglabs/lightning-terminal/releases
-LITVERSION="0.4.1-alpha"
+LITVERSION="0.5.0-alpha"
 
 # command info
 if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "-help" ]; then
@@ -12,10 +12,14 @@ if [ $# -eq 0 ] || [ "$1" = "-h" ] || [ "$1" = "-help" ]; then
 fi
 
 # check who signed the release in https://github.com/lightninglabs/lightning-terminal/releases
-PGPsigner="guggero" 
-if [ $PGPsigner=guggero ];then
+PGPsigner="roasbeef" 
+
+if [ $PGPsigner = guggero ];then
   PGPpkeys="https://keybase.io/guggero/pgp_keys.asc"
   PGPcheck="03DB6322267C373B"
+elif [ $PGPsigner = roasbeef ];then
+  PGPpkeys="https://keybase.io/roasbeef/pgp_keys.asc "
+  PGPcheck="3BBD59E99B280306"
 fi
 
 source /mnt/hdd/raspiblitz.conf
@@ -288,6 +292,12 @@ TimeoutSec=60
 Restart=always
 RestartSec=60
 
+# Hardening measures
+PrivateTmp=true
+ProtectSystem=full
+NoNewPrivileges=true
+PrivateDevices=true
+
 [Install]
 WantedBy=multi-user.target
 " | sudo tee -a /etc/systemd/system/litd.service
@@ -343,9 +353,6 @@ fi
 # switch off
 if [ "$1" = "0" ] || [ "$1" = "off" ]; then
 
-  # setting value in raspi blitz config
-  sudo sed -i "s/^lit=.*/lit=off/g" /mnt/hdd/raspiblitz.conf
-
   isInstalled=$(sudo ls /etc/systemd/system/litd.service 2>/dev/null | grep -c 'litd.service')
   if [ ${isInstalled} -eq 1 ]; then
     echo "*** REMOVING LIT ***"
@@ -353,10 +360,6 @@ if [ "$1" = "0" ] || [ "$1" = "off" ]; then
     sudo systemctl stop litd
     sudo systemctl disable litd
     sudo rm /etc/systemd/system/litd.service
-    # delete user 
-    sudo userdel -rf lit
-    # delete group
-    sudo groupdel lit
     # close ports on firewall
     sudo ufw deny 8443
     # delete Go package
@@ -369,6 +372,14 @@ if [ "$1" = "0" ] || [ "$1" = "off" ]; then
   else 
     echo "# LiT is not installed."
   fi
+  
+  # clean up anyway
+  # delete user 
+  sudo userdel -rf lit
+  # delete group
+  sudo groupdel lit
+  # setting value in raspi blitz config
+  sudo sed -i "s/^lit=.*/lit=off/g" /mnt/hdd/raspiblitz.conf
 
   exit 0
 fi
